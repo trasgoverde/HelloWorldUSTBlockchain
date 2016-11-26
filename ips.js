@@ -1,3 +1,5 @@
+/*eslint-env node*/
+
 /*
 * Class name : ips.js
 * Creation date : 10/11/2016

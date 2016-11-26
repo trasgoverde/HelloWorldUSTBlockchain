@@ -1,6 +1,5 @@
 /*eslint-env node*/
 
-
 const erisDbFactory = require('eris-db');
 const erisContracts = require('eris-contracts');
 const solc = require('solc');
@@ -13,7 +12,6 @@ var pipe; /* Pipe for creating contracts */
 var contractManager;/* Contract Manager for creating contracts*/
 var account = accounts[0].address;
 var greeterSource = 'contract greeter { string greeting; function greeter(string _greeting) public { greeting = _greeting; } function greet() constant returns (string) { return greeting; } }'
-
 
 /*Initialize ERISDB*/
 erisdb = erisDbFactory.createInstance(nodes[0]);
@@ -34,13 +32,11 @@ erisdb.accounts().getAccounts((err, res) => { console.log(res.accounts.map(item 
   })
 })) });
 
-
 /* Compile the Greeter Contract*/
 var compiledContract = solc.compile(greeterSource);
-//console.log(compiledContract)
+console.log("Compiled Contract:" + compiledContract)
 var contractFactory = contractManager.newContractFactory(JSON.parse(compiledContract.contracts.greeter.interface)); //parameter is abi
-// console.log(contractFactory)
-
+console.log("Contract Factory:" + contractFactory)
 
 /* Send the contract */
 contractFactory.new.apply(contractFactory, ["Hello World",
@@ -58,32 +54,37 @@ contractFactory.new.apply(contractFactory, ["Hello World",
  }]);
 
 
-//------------------------------------------------------------------------------
-// hello world app is based on node.js starter application for Bluemix
-//------------------------------------------------------------------------------
 
-// This application uses express as its web server
-// for more info, see: http://expressjs.com
-var express = require('express');
 
-// cfenv provides access to your Cloud Foundry environment
-// for more info, see: https://www.npmjs.com/package/cfenv
-var cfenv = require('cfenv');
 
-// create a new express server
-var app = express();
+// Load the appropriate modules for the app
+var cfenv = require("cfenv");
+var express = require("express");
+var bodyParser = require('body-parser');
 
-// serve the files out of ./public as our main files
-app.use(express.static(__dirname + '/public'));
-
-// get the app environment from Cloud Foundry
-var appEnv = cfenv.getAppEnv();
-
-// start server on the specified port and binding host
-app.listen(appEnv.port, '0.0.0.0', function() {
-
-	// print a message when the server starts listening
-  console.log("server starting on " + appEnv.url);
+// Defensiveness against errors parsing request bodies...
+process.on('uncaughtException', function (err) {
+    console.log('#### Caught exception: ' + err);
+});
+process.on("exit", function(code) {
+    console.log("#### Exiting with code: " + code);
 });
 
+// Checking Bluemix setup
+var appEnv = cfenv.getAppEnv();
 
+// Configure the app web container
+var app = express();
+app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(express.static(__dirname + '/public'));
+
+// Finishing configuration of the app web container
+app.listen(appEnv.port);
+console.log("#### Server listening on port " + appEnv.port);
+
+// Home page
+app.get('/', function (req, res) 
+{
+      res.render('index', {compiledContract: compiledContract});   
+});

@@ -1,3 +1,9 @@
+---
 applications:
-- name: node-hello-world
-  memory: 1024M
+- name: HelloWorldUSTBlockchain
+  instances: 1
+  memory: 512M
+  host: HelloWorldUSTBlockchain
+  domain: mybluemix.net
+  path: .
+  command: node app.js
